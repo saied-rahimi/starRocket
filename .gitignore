@@ -46,3 +46,4 @@ app.*.map.json
 **/.env.*
 **/fastlane/*.xml
 android/.kotlin/sessions/kotlin-compiler-6547092889900247275.salive
+/build/app/
