@@ -27,7 +27,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   void updateScore(int score) {
-    _score = score; // Update score
+    _score += score;
     emit(StateUpdated(_remainingTime, _score));
   }
 }

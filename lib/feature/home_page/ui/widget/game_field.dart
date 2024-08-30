@@ -42,7 +42,11 @@ class _GameFieldState extends State<GameField> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Coins(widget.size),
+        Coins(
+          widget.size,
+          rocketPositionX: rocketPositionX,
+          rocketWidth: 50,
+        ),
         RocketWidget(
           size: widget.size,
           positionX: rocketPositionX,
