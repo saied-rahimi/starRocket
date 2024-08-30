@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:starship/feature/home_page/ui/widget/arrow_widget.dart';
+import 'package:starship/feature/home_page/ui/widget/coins.dart';
 import 'package:starship/feature/home_page/ui/widget/rocket_widget.dart';
 
 class GameField extends StatefulWidget {
@@ -41,17 +42,18 @@ class _GameFieldState extends State<GameField> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Coins(widget.size),
         RocketWidget(
           size: widget.size,
           positionX: rocketPositionX,
         ),
         ArrowWidget(
           size: widget.size,
-          onTap: () => moveRocket(true), // Move left
+          onTap: () => moveRocket(true),
         ),
         ArrowWidget(
           size: widget.size,
-          onTap: () => moveRocket(false), // Move right
+          onTap: () => moveRocket(false),
           flip: true,
         ),
       ],
