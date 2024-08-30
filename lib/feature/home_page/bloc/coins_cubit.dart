@@ -3,71 +3,95 @@ import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 
-
 part 'coins_state.dart';
 
-class CoinCubit extends Cubit<CoinState> {
+class CoinsCubit extends Cubit<CoinsState> {
   final Random _random = Random();
-  final Function() onCollision;
-  late int _fallDuration;
-  late int _timerInterval;
-  late final Timer _timer;
+  final Function(int) onCollision;
+  final Size size;
+  final double rocketWidth;
+  Timer? _coinTimer;
+  List<int> collectedCoinId = [];
 
-  CoinCubit({required this.onCollision}) : super(const CoinState(topPosition: 0, leftPosition: 0)) {
-    _fallDuration = 10000;
-    _timerInterval = 16;
+  CoinsCubit({required this.onCollision, required this.size, required this.rocketWidth}) : super(CoinsState(coins: []));
+
+  void startCoinRain() {
+    _coinTimer = Timer.periodic(
+      Duration(milliseconds: _random.nextInt(7000) + 2000),
+      (timer) {
+        if (state.coins.length <= 25) {
+          addCoin();
+        }
+      },
+    );
   }
 
-  void initialize(Size size, double rocketX) {
-    emit(CoinState(
-      topPosition: 0,
+  void addCoin() {
+    final coin = CoinState(
+      id: state.coins.length,
+      topPosition: 10,
       leftPosition: _random.nextDouble() * size.width,
-    ));
-
-    _startFalling(size, rocketX);
+      isActive: true,
+    );
+    emit(CoinsState(coins: List.from(state.coins)..add(coin)));
+    startCoinFalling(coin);
   }
 
-  void _startFalling(Size size, double rocketX) {
+  void startCoinFalling(CoinState coin) {
+    final fallDuration = Duration(seconds: _random.nextInt(5) + 3);
     final startTime = DateTime.now();
 
-    _timer = Timer.periodic(Duration(milliseconds: _timerInterval), (timer) {
+    Timer.periodic(const Duration(milliseconds: 16), (timer) {
       final elapsed = DateTime.now().difference(startTime).inMilliseconds;
 
-      if (elapsed >= _fallDuration) {
-        _timer.cancel();
-        emit(CoinState(
-          topPosition: size.height,
-          leftPosition: state.leftPosition,
-        ));
+      if (elapsed >= fallDuration.inMilliseconds) {
+        timer.cancel();
+        // _deactivateCoin(coin);
         return;
       }
 
-      final newTopPosition = (elapsed / _fallDuration) * size.height;
+      final newTopPosition = (elapsed / fallDuration.inMilliseconds) * size.height;
 
-      emit(CoinState(
-        topPosition: newTopPosition,
-        leftPosition: state.leftPosition,
-      ));
-
-      checkCollision(rocketX, size);
+      updateCoinPosition(coin, newTopPosition);
     });
   }
 
-  void checkCollision(double rocketX, Size size) {
-    if (state.topPosition >= size.height - 150 && state.leftPosition >= rocketX && state.leftPosition <= rocketX + 80) {
-      onCollision();
-      _timer.cancel();
-      emit(CoinState(
-        topPosition: state.topPosition,
-        leftPosition: state.leftPosition,
-        isActive: false,
-      ));
+  void updateCoinPosition(CoinState coin, double newTopPosition) {
+    final updatedCoin = coin.copyWith(topPosition: newTopPosition);
+
+    final updatedCoins = state.coins.map((c) {
+      return c.id == coin.id ? updatedCoin : c;
+    }).toList();
+
+    emit(CoinsState(coins: updatedCoins));
+  }
+
+  void checkCollision(double rocketX) {
+    for (final coin in state.coins) {
+      if (coin.isActive &&
+          coin.topPosition >= size.height - 200 &&
+          coin.leftPosition >= rocketX &&
+          coin.leftPosition <= rocketX + rocketWidth &&
+          !collectedCoinId.contains(coin.id)) {
+        collectedCoinId.add(coin.id);
+        onCollision(10);
+        _deactivateCoin(coin);
+      }
     }
+  }
+
+  void _deactivateCoin(CoinState coin) {
+    final updatedCoin = coin.copyWith(isActive: false);
+    final updatedCoins = state.coins.map((c) {
+      return c.id == coin.id ? updatedCoin : c;
+    }).toList();
+
+    emit(CoinsState(coins: updatedCoins));
   }
 
   @override
   Future<void> close() {
-    _timer.cancel();
+    _coinTimer?.cancel();
     return super.close();
   }
 }
