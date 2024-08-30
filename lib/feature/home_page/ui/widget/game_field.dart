@@ -1,66 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:starship/feature/home_page/bloc/rocket_cubit.dart';
 import 'package:starship/feature/home_page/ui/widget/arrow_widget.dart';
 import 'package:starship/feature/home_page/ui/widget/coins.dart';
 import 'package:starship/feature/home_page/ui/widget/rocket_widget.dart';
 
-class GameField extends StatefulWidget {
-  const GameField(this.size, {super.key});
+class GameField extends StatelessWidget {
   final Size size;
 
-  @override
-  State<GameField> createState() => _GameFieldState();
-}
-
-class _GameFieldState extends State<GameField> {
-  double rocketPositionX = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    rocketPositionX = (widget.size.width - 50) / 2;
-  }
-
-  void moveRocket(bool moveLeft) {
-    setState(() {
-      if (moveLeft) {
-        rocketPositionX += 20;
-      } else {
-        rocketPositionX -= 20;
-      }
-
-      // Ensure the rocket stays within the screen bounds
-      final screenWidth = MediaQuery.of(context).size.width;
-      if (rocketPositionX < 0) {
-        rocketPositionX = 0;
-      } else if (rocketPositionX > screenWidth - 50) {
-        rocketPositionX = screenWidth - 50;
-      }
-    });
-  }
+  const GameField(this.size, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Coins(
-          widget.size,
-          rocketPositionX: rocketPositionX,
-          rocketWidth: 50,
-        ),
-        RocketWidget(
-          size: widget.size,
-          positionX: rocketPositionX,
-        ),
-        ArrowWidget(
-          size: widget.size,
-          onTap: () => moveRocket(true),
-        ),
-        ArrowWidget(
-          size: widget.size,
-          onTap: () => moveRocket(false),
-          flip: true,
-        ),
-      ],
+    return BlocProvider(
+      create: (_) => RocketCubit(size.width),
+      child: BlocBuilder<RocketCubit, RocketState>(
+        builder: (context, state) {
+          return Stack(
+            children: [
+              Coins(
+                size,
+                rocketPositionX: state.positionX,
+                rocketWidth: 50,
+              ),
+              RocketWidget(
+                size: size,
+                positionX: state.positionX,
+              ),
+              ArrowWidget(
+                size: size,
+                onTap: () {
+                  context.read<RocketCubit>().moveRocket(true);
+                },
+              ),
+              ArrowWidget(
+                size: size,
+                onTap: () {
+                  context.read<RocketCubit>().moveRocket(false);
+                },
+                flip: true,
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

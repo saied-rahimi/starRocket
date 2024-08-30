@@ -16,7 +16,7 @@ class RocketWidget extends StatelessWidget {
       height: 130,
       width: 50,
       top: size.height - 200,
-      left: positionX, // Use positionX for rocket position
+      left: positionX,
       child: Image.asset('asset/rocket.png'),
     );
   }

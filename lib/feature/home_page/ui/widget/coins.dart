@@ -8,9 +8,11 @@ import 'package:starship/feature/home_page/bloc/coins_cubit.dart';
 
 class Coins extends StatefulWidget {
   const Coins(this.size, {super.key, required this.rocketPositionX, required this.rocketWidth});
+
   final Size size;
   final double rocketPositionX;
   final double rocketWidth;
+
   @override
   State<Coins> createState() => _CoinsState();
 }
@@ -31,8 +33,9 @@ class _CoinsState extends State<Coins> {
       (timer) {
         if (!mounted) return;
         setState(() {
-          if (_coins.length < 25) {
-          _coins.add(_createCoin());
+          final scores = context.read<AppCubit>();
+          if (_coins.length <= 25 && scores.appScore <= 50) {
+            _coins.add(_createCoin());
           }
         });
       },
@@ -64,25 +67,27 @@ class Coin extends StatelessWidget {
   final double rocketWidth;
 
   const Coin({
-    Key? key,
+    super.key,
     required this.duration,
     required this.size,
     required this.rocketX,
     required this.rocketWidth,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CoinCubit(
+      create: (_) => CoinCubit(
         onCollision: () {
-          debugPrint('onCollision');
           BlocProvider.of<AppCubit>(context).updateScore(10);
         },
-      )..initialize(size),
+      )..initialize(
+          size,
+          rocketX,
+        ),
       child: BlocBuilder<CoinCubit, CoinState>(
         builder: (context, state) {
-          if (!state.isVisible) return Container();
+          if (!state.isActive) return Container();
 
           return Positioned(
             top: state.topPosition,

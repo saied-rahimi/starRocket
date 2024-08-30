@@ -1,33 +1,36 @@
-import 'dart:math';
 import 'dart:async';
+import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:equatable/equatable.dart';
+
 
 part 'coins_state.dart';
 
 class CoinCubit extends Cubit<CoinState> {
   final Random _random = Random();
   final Function() onCollision;
-  final int _fallDuration = 3000; // Fall duration in milliseconds
+  late int _fallDuration;
+  late int _timerInterval;
   late final Timer _timer;
 
-  CoinCubit({required this.onCollision})
-      : super(const CoinState(topPosition: 0, leftPosition: 0));
+  CoinCubit({required this.onCollision}) : super(const CoinState(topPosition: 0, leftPosition: 0)) {
+    _fallDuration = 10000;
+    _timerInterval = 16;
+  }
 
-  void initialize(Size size) {
+  void initialize(Size size, double rocketX) {
     emit(CoinState(
       topPosition: 0,
       leftPosition: _random.nextDouble() * size.width,
     ));
 
-    _startFalling(size);
+    _startFalling(size, rocketX);
   }
 
-  void _startFalling(Size size) {
+  void _startFalling(Size size, double rocketX) {
     final startTime = DateTime.now();
 
-    _timer = Timer.periodic(Duration(milliseconds: 16), (timer) {
+    _timer = Timer.periodic(Duration(milliseconds: _timerInterval), (timer) {
       final elapsed = DateTime.now().difference(startTime).inMilliseconds;
 
       if (elapsed >= _fallDuration) {
@@ -46,20 +49,18 @@ class CoinCubit extends Cubit<CoinState> {
         leftPosition: state.leftPosition,
       ));
 
-      checkCollision(size.width / 2 - 25, 50, size);
+      checkCollision(rocketX, size);
     });
   }
 
-  void checkCollision(double rocketX, int rocketWidth, Size size) {
-    if (state.topPosition >= size.height - 50 && // Near the bottom of the screen where the rocket is
-        state.leftPosition >= rocketX &&
-        state.leftPosition <= rocketX + rocketWidth) {
-      onCollision(); // Trigger the collision callback
+  void checkCollision(double rocketX, Size size) {
+    if (state.topPosition >= size.height - 150 && state.leftPosition >= rocketX && state.leftPosition <= rocketX + 80) {
+      onCollision();
       _timer.cancel();
       emit(CoinState(
         topPosition: state.topPosition,
         leftPosition: state.leftPosition,
-        isVisible: false, // Hide the coin after collision
+        isActive: false,
       ));
     }
   }

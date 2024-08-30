@@ -1,16 +1,15 @@
 part of 'coins_cubit.dart';
 
-class CoinState extends Equatable {
+class CoinState {
   final double topPosition;
   final double leftPosition;
-  final bool isVisible;
+  final bool isActive;
 
   const CoinState({
     required this.topPosition,
     required this.leftPosition,
-    this.isVisible = true,
+    this.isActive = true,
   });
 
-  @override
-  List<Object> get props => [topPosition, leftPosition, isVisible];
+  List<Object> get props => [topPosition, leftPosition, isActive];
 }
