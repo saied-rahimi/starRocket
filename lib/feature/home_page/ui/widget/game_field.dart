@@ -55,11 +55,23 @@ class GameField extends StatelessWidget {
                     onTap: () {
                       context.read<RocketCubit>().moveRocket(true);
                     },
+                    onLongPressStart: () {
+                      context.read<RocketCubit>().moveRocket(true);
+                    },
+                    onLongPressEnd: () {
+                      context.read<RocketCubit>().stopRocket();
+                    },
                   ),
                   ArrowWidget(
                     size: size,
                     onTap: () {
                       context.read<RocketCubit>().moveRocket(false);
+                    },
+                    onLongPressStart: () {
+                      context.read<RocketCubit>().moveRocket(false);
+                    },
+                    onLongPressEnd: () {
+                      context.read<RocketCubit>().stopRocket();
                     },
                     flip: true,
                   ),
