@@ -30,25 +30,29 @@ class GameField extends StatelessWidget {
         builder: (context, rocketState) {
           return BlocBuilder<CoinsCubit, CoinsState>(
             builder: (context, coinsState) {
-              context.read<CoinsCubit>().checkCollision(rocketState.positionX);
-              if (coinsState.coins.isNotEmpty) {
-                // debugPrint('state is: 1 ${coinsState.coins[0].isActive}');
+              if(coinsState.coins.where((coin) => coin.isActive == false).length >= 25){
+                context.read<AppCubit>().cancelTimer();
               }
+              context.read<CoinsCubit>().checkCollision(rocketState.positionX);
+              final score = context.read<AppCubit>().appScore;
               return Stack(
                 children: [
-                  ...coinsState.coins
-                      .where((coin) => coin.isActive) // Only active coins are rendered
-                      .map((coin) {
-                    return Positioned(
-                      top: coin.topPosition,
-                      left: coin.leftPosition,
-                      child: Image.asset(
-                        'asset/star.png',
-                        width: 30,
-                        height: 30,
-                      ),
-                    );
-                  }),
+                  if (score < 50)
+                    Stack(
+                      children: [
+                        ...coinsState.coins.where((coin) => coin.isActive).map((coin) {
+                          return Positioned(
+                            top: coin.topPosition,
+                            left: coin.leftPosition,
+                            child: Image.asset(
+                              'asset/star.png',
+                              width: 30,
+                              height: 30,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                   RocketWidget(size: size, positionX: rocketState.positionX),
                   ArrowWidget(
                     size: size,

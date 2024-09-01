@@ -17,9 +17,9 @@ class CoinsCubit extends Cubit<CoinsState> {
 
   void startCoinRain() {
     _coinTimer = Timer.periodic(
-      Duration(milliseconds: _random.nextInt(7000) + 2000),
+      Duration(milliseconds: _random.nextInt(1000) + 1000),
       (timer) {
-        if (state.coins.length <= 25) {
+        if (state.coins.length < 25 && collectedCoinId.length < 5) {
           addCoin();
         }
       },
@@ -46,7 +46,7 @@ class CoinsCubit extends Cubit<CoinsState> {
 
       if (elapsed >= fallDuration.inMilliseconds) {
         timer.cancel();
-        // _deactivateCoin(coin);
+        deactivateCoin(coin);
         return;
       }
 
@@ -69,18 +69,19 @@ class CoinsCubit extends Cubit<CoinsState> {
   void checkCollision(double rocketX) {
     for (final coin in state.coins) {
       if (coin.isActive &&
-          coin.topPosition >= size.height - 200 &&
+          coin.topPosition >= size.height - 150 &&
           coin.leftPosition >= rocketX &&
           coin.leftPosition <= rocketX + rocketWidth &&
           !collectedCoinId.contains(coin.id)) {
         collectedCoinId.add(coin.id);
         onCollision(10);
-        _deactivateCoin(coin);
+        deactivateCoin(coin);
+        return;
       }
     }
   }
 
-  void _deactivateCoin(CoinState coin) {
+  void deactivateCoin(CoinState coin) {
     final updatedCoin = coin.copyWith(isActive: false);
     final updatedCoins = state.coins.map((c) {
       return c.id == coin.id ? updatedCoin : c;

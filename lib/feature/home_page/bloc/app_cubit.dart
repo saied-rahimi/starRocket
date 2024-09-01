@@ -11,10 +11,13 @@ class AppCubit extends Cubit<AppState> {
   Timer? _timer;
   int _remainingTime = 180;
   int appScore = 0;
+  void cancelTimer() {
+    _timer?.cancel();
+  }
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingTime > 0) {
+      if (_remainingTime > 0 && appScore < 50) {
         _remainingTime--;
         emit(StateUpdated(_remainingTime, appScore));
       } else {
