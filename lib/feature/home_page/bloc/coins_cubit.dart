@@ -17,7 +17,7 @@ class CoinsCubit extends Cubit<CoinsState> {
 
   void startCoinRain() {
     _coinTimer = Timer.periodic(
-      Duration(milliseconds: _random.nextInt(5000) + 2000),
+      Duration(milliseconds: _random.nextInt(3000) + 1000),
       (timer) {
         if (state.coins.length < 25 && collectedCoinId.length < 5) {
           addCoin();
